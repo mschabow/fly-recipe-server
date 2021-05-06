@@ -1,4 +1,4 @@
-package com.mschabow.flyrecipeserver.appLogic;
+package com.mschabow.flyrecipeserver.applogic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mschabow.flyrecipeserver.controller.YouTubeAPIController;
@@ -16,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.*;
 
 @Component
 public class RecipeExtractor {
@@ -27,10 +25,8 @@ public class RecipeExtractor {
     IngredientService ingredientService;
     VideoInfoService videoInfoService;
 
-    private String testHtml = "https://www.flyfishfood.com/blogs/euro-nymph-tutorials/thread-frenchie";
-    public ResponseBody testResponseBody;
     ObjectMapper objectMapper = new ObjectMapper();
-    List<String> triedSearchStrings = new ArrayList<>();
+    Map<String, String> triedLinks = new HashMap<>();
 
     @Autowired
     public RecipeExtractor(YouTubeAPIController youTubeApi,
@@ -41,41 +37,28 @@ public class RecipeExtractor {
         this.recipeService = recipeService;
         this.ingredientService = ingredientService;
         this.videoInfoService = videoInfoService;
-        //testResponseBody = youTubeApi.sendGetRequest(testHtml);
     }
 
-    public ResponseBody getTestResponseBody() {
-        return testResponseBody;
-    }
+   public List<String> extractMaterialsHTTPLink(String description) {
+       Map<String, String> httpLinks = new HashMap<>();
 
-    public List<String> extractMaterialsHTTPLink(String description) {
-
-        List<String> httpLinks = new ArrayList<>();
         String[] tokens = description.split("flyfishfood.com/");
         if (tokens.length > 1) {
             String[] tokens2 = tokens[1].split("\n");
             if (tokens2.length > 1) {
                 String searchString = tokens2[0].strip();
-                if (triedSearchStrings.stream().noneMatch(p -> p.equals(searchString))) {
-                    triedSearchStrings.add(searchString);
-                    httpLinks.add("https://www.flyfishfood.com/" + searchString);
-
-
+                if (triedLinks.get(searchString) == null) {
+                    triedLinks.put(searchString, "https://www.flyfishfood.com/" + searchString);
+                    httpLinks.put(searchString, "https://www.flyfishfood.com/" + searchString);
                 }
             }
 
         }
-        return httpLinks;
-
-    }
-
-    public void createRecipies() {
-        //get ID list
-        //foreach id, create recipe
+        return httpLinks.values().stream().toList();
     }
 
 
-    public FlyRecipe createRecipe(String youTubeVideoId) {
+    public void createRecipe(String youTubeVideoId) {
         FlyRecipe recipe = null;
 
         // get video info from YouTubeAPI
@@ -93,38 +76,19 @@ public class RecipeExtractor {
             {
                 // try to get ingredients from links
                 ingredients.addAll(getIngredientsFromFFFPage(htmlLinks));
-
             }
             if(ingredients.isEmpty()){
                 ingredients.addAll(getIngredientsFromDescription(videoInfo));
             }
             if(!ingredients.isEmpty()){
-                trySaveIngredients(ingredients);
+                ingredientService.save(ingredients);
                 recipe.setIngredientList(ingredients);
                 recipeService.save(recipe);
             }
         }
-        return recipe;
     }
 
-    private void trySaveIngredients(List<Ingredient> ingredients) {
-        Iterable<Ingredient> savedIngredients = ingredientService.list();
-        for (Ingredient ingredient : ingredients) {
 
-            if(ingredient.getName() != null) {
-                boolean ingredientFound = false;
-                for (Ingredient i : savedIngredients) {
-                    if (i.getName() != null && i.getName().equals(ingredient.getName())) {
-                        ingredientFound = true;
-                        break;
-                    }
-                }
-                if (!ingredientFound) {
-                    ingredientService.save(ingredient);
-                }
-            }
-        }
-    }
 
     private List<Ingredient> getIngredientsFromDescription(VideoInfo videoInfo) {
         String description = videoInfo.getDescription();
@@ -202,45 +166,71 @@ public class RecipeExtractor {
     }
 
     public List<Ingredient> extractIngredientsFromBody(String htmlText) {
-        Ingredient ingredient = null;
         List<Ingredient> ingredientList = new ArrayList<>();
 
         String[] tokens = htmlText.split("/products/");
 
         int ingredientIndex = 0;
 
-        while (ingredientIndex < tokens.length) {
-            if (tokens[ingredientIndex].contains("List.Item")) {
-                try {
-                    ingredient = new Ingredient();
-                    String ingredientString = tokens[ingredientIndex];
-                    String[] tokens1 = ingredientString.split("\"");
-                    String link = tokens1[0].strip();
-                    ingredient.setLink("/products/" + link);
+        if(tokens.length > 1){
+            while (ingredientIndex < tokens.length) {
+                if (tokens[ingredientIndex].contains("List.Item")) {
+                    try {
+                        Ingredient ingredient = new Ingredient();
+                        String ingredientString = tokens[ingredientIndex];
+                        String[] tokens1 = ingredientString.split("\"");
+                        String link = tokens1[0].strip();
+                        ingredient.setLink("/products/" + link);
 
 
-                    String[] tokens2 = ingredientString.split("<b><u>");
-                    if (tokens2.length > 1) {
-                        String type = tokens2[1].split("</u></b>:")[0];
-                        ingredient.setType(type);
+                        String[] tokens2 = ingredientString.split("<b><u>");
+                        if (tokens2.length > 1) {
+                            String type = tokens2[1].split("</u></b>:")[0];
+                            ingredient.setType(type);
+                        }
+
+
+                        String[] tokens3 = ingredientString.split("</u></b>:");
+                        if (tokens3.length > 1) {
+                            String name = tokens3[1].split("</span>")[0];
+                            ingredient.setName(name);
+                        }
+                        ingredientList.add(ingredient);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
-
-                    String[] tokens3 = ingredientString.split("</u></b>:");
-                    if (tokens3.length > 1) {
-                        String name = tokens3[1].split("</span>")[0];
-                        ingredient.setName(name);
-                    }
-                    ingredientList.add(ingredient);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+                ingredientIndex += 1;
+
 
             }
-            ingredientIndex += 1;
+        }
+        else{
+            tokens=htmlText.split("\n\n");
+            if(tokens.length > 1){
+                while (ingredientIndex < tokens.length) {
+                    if (tokens[ingredientIndex].contains("Hook:")) {
+                        String[] tokens2 = tokens[ingredientIndex].split("\n");
+                        Arrays.stream(tokens2).toList().forEach(token -> {
+                            String[] tokens3 = token.split(":");
+                            String type = tokens3[0].strip();
+                            String name = tokens3[1].strip();
+                            Ingredient ingredient = new Ingredient();
+                            ingredient.setType(type);
+                            ingredient.setName(name);
+                            ingredientList.add(ingredient);
+                        });
+                    }
+                    ingredientIndex += 1;
+                }
+            }
+
 
 
         }
+
+
         return ingredientList;
     }
 }

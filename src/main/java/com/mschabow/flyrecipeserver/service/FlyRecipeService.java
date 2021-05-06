@@ -28,4 +28,8 @@ public class FlyRecipeService {
     public Iterable<FlyRecipe> save(List<FlyRecipe> recipes){
         return resultRepository.saveAll(recipes);
     }
+
+    public void reset(){
+      resultRepository.deleteAll();
+    }
 }

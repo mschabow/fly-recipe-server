@@ -1,4 +1,4 @@
-package com.mschabow.flyrecipeserver.appLogic;
+package com.mschabow.flyrecipeserver.applogic;
 
 import com.mschabow.flyrecipeserver.controller.YouTubeAPIController;
 import com.mschabow.flyrecipeserver.domain.YoutubeResult.SearchResults;

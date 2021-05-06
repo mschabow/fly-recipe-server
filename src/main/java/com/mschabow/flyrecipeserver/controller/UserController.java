@@ -88,7 +88,7 @@ public class UserController {
     }
 
     @CrossOrigin
-    @PatchMapping("/{id}/updateIngredients")
+    @PatchMapping("/{id}/update-ingredients")
     public ResponseEntity<?> updateIngredients(@RequestBody List<Ingredient> ingredients, @PathVariable String id){
         ResponseEntity<?> response;
 
@@ -105,7 +105,7 @@ public class UserController {
     }
 
     @CrossOrigin
-    @PatchMapping("/{id}/updateFavorites")
+    @PatchMapping("/{id}/update-favorites")
     public ResponseEntity<?> updateFavorites(@RequestBody List<String> favoriteIds, @PathVariable String id){
         ResponseEntity<?> response;
 
