@@ -11,9 +11,9 @@
 	<groupId>com.mschabow</groupId>
 	<artifactId>fly-recipe-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>fly-recipe-server</name>
-	<description>fly recipe server spring backend war</description>
+	<description>fly recipe server spring backend jar</description>
 	<properties>
 		<java.version>16</java.version>
 	</properties>
