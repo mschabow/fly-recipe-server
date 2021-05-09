@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @CrossOrigin
-    @PutMapping("/{id}/add-user")
+    @PutMapping("/{id}/add-user/")
     public ResponseEntity<User> addUser(@PathVariable String id){
         User user = new User();
         if(!userExists(id)){
@@ -76,8 +76,8 @@ public class UserController {
         return recipes;
     }
 
-    @CrossOrigin
-    @GetMapping("/{id}/get-ingredients")
+  
+    @GetMapping("/{id}/get-ingredients/")
     public OwnedIngredients getIngredeients(@PathVariable String id){
         OwnedIngredients ingredients = new OwnedIngredients();
         if(userService.existsById(id)){
@@ -88,7 +88,7 @@ public class UserController {
     }
 
     @CrossOrigin
-    @PatchMapping("/{id}/update-ingredients")
+    @PatchMapping("/{id}/update-ingredients/")
     public ResponseEntity<?> updateIngredients(@RequestBody List<Ingredient> ingredients, @PathVariable String id){
         ResponseEntity<?> response;
 
@@ -105,7 +105,7 @@ public class UserController {
     }
 
     @CrossOrigin
-    @PatchMapping("/{id}/update-favorites")
+    @PatchMapping("/{id}/update-favorites/")
     public ResponseEntity<?> updateFavorites(@RequestBody List<String> favoriteIds, @PathVariable String id){
         ResponseEntity<?> response;
 
