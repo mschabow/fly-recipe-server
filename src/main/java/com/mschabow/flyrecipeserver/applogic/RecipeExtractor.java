@@ -7,9 +7,7 @@ import com.mschabow.flyrecipeserver.domain.Ingredient;
 import com.mschabow.flyrecipeserver.domain.YoutubeVideoInfo.Thumbnail;
 import com.mschabow.flyrecipeserver.domain.YoutubeVideoInfo.VideoInfo;
 import com.mschabow.flyrecipeserver.service.FlyRecipeService;
-import com.mschabow.flyrecipeserver.service.IngredientService;
 import com.mschabow.flyrecipeserver.service.VideoInfoService;
-import okhttp3.ResponseBody;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,6 @@ import java.util.*;
 public class RecipeExtractor {
     YouTubeAPIController youTubeApi;
     FlyRecipeService recipeService;
-    IngredientService ingredientService;
     VideoInfoService videoInfoService;
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -31,11 +28,9 @@ public class RecipeExtractor {
     @Autowired
     public RecipeExtractor(YouTubeAPIController youTubeApi,
                            FlyRecipeService recipeService,
-                           IngredientService ingredientService,
                            VideoInfoService videoInfoService) {
         this.youTubeApi = youTubeApi;
         this.recipeService = recipeService;
-        this.ingredientService = ingredientService;
         this.videoInfoService = videoInfoService;
     }
 
@@ -81,7 +76,6 @@ public class RecipeExtractor {
                 ingredients.addAll(getIngredientsFromDescription(videoInfo));
             }
             if(!ingredients.isEmpty()){
-                ingredientService.save(ingredients);
                 recipe.setIngredientList(ingredients);
                 recipeService.save(recipe);
             }

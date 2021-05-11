@@ -37,8 +37,8 @@ public class FlyRecipeServerApplication {
   //@Scheduled(cron = "0 0 0 * * ?") // Once Per Day at 12am
   private void updateFffVideoIds(){
     //VideoIdUpdateManager.getVideoListFromFile(file);
-    //updateService.getYouTubeItemsFlyFishFood("");
-    flyRecipeService.reset();
+    updateService.getYouTubeItemsFlyFishFood("");
+    //flyRecipeService.reset();
 
     Map<String, String> items = new HashMap<>();
 

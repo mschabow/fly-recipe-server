@@ -26,7 +26,8 @@ public class User {
     }
 
     public void setIngredientList(List<Ingredient> ingredientList) {
-        this.ingredientList = ingredientList;
+        this.ingredientList.clear();
+        this.ingredientList.addAll(ingredientList);
     }
 
     public List<String> getFavoriteRecipes() {
