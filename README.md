@@ -16,7 +16,7 @@ Fly recipe server implements a spring boot application that:
       * Update a user's favorite recipes
       * Udate a user's owned ingredients
 # Front End Repository
-[https://github.com/mschabow/fly-recipe-react-frontend]
+https://github.com/mschabow/fly-recipe-react-frontend
 
 # Live Front End Application
-[https://main.d1gzc3kx2t95ke.amplifyapp.com]
+https://main.d1gzc3kx2t95ke.amplifyapp.com
